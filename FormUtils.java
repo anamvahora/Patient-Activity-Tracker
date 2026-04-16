@@ -1,4 +1,4 @@
-package utils;
+package its340_andreas_anamv;
 import javax.swing.*;
 import java.awt.*;
 
@@ -17,4 +17,12 @@ public class FormUtils {
             field.setBackground(Color.WHITE);
         }
     }
+    
+    public static void disableEdit(JTextField[] fields) {
+    java.awt.Color lockedColor = new java.awt.Color(240, 240, 240);
+    for (JTextField field : fields) {
+        field.setEditable(false);
+        field.setBackground(lockedColor);
+    }
+}
 }

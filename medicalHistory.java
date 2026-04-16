@@ -15,19 +15,29 @@ public class medicalHistory extends javax.swing.JFrame {
     /**
      * Creates new form Form1
      */
+    private JTextField[] medicalFields;
+    
     public medicalHistory() {
         initComponents();
         
-    int testID = 1; 
+        // Initialize it once the components exist
+        medicalFields = new JTextField[]{
+            tb_Tobacco, tb_TobaccoQty, tb_TobaccoDur, 
+            tb_Alcohol, tb_AlcoholQty, tb_AlcoholDur, 
+            tb_Drug, tb_DrugType, tb_DrugDur, 
+            tb_BloodType, tb_RH
+        };
+        
+        int pid = SelectedPatient.patientID;
+        
+        lbl_PatientID.setText("Patient ID: " + pid);
+        
+        if (pid != -1) {
+        loadMedicalHistoryData(pid);
+        }
 
-    // 2. Load the medical data into the fields
-    loadMedicalHistoryData(testID); 
-    
-    // 3. Set the ID field so Save and Navigation work correctly
-    lbl_PatientID.setText(String.valueOf("Patient ID: " +testID));
-
-    // 4. Start in locked View Mode (Gray)
-    setFormMode(false);
+        loadMedicalHistoryData(1);
+        setFormMode(false);
     }
     
     private void loadMedicalHistoryData(int pid) {
@@ -62,19 +72,11 @@ public class medicalHistory extends javax.swing.JFrame {
 }
     
 private String[] getFieldsArray() {
-    return new String[]{
-        tb_Tobacco.getText(),      // p_Tobacco
-        tb_TobaccoQty.getText(),   // p_TobaccoQty
-        tb_TobaccoDur.getText(),   // p_TobaccoDur (Added)
-        tb_Alcohol.getText(),      // p_Alcohol
-        tb_AlcoholQty.getText(),   // p_AlcoholQty
-        tb_AlcoholDur.getText(),   // p_AlcoholDur (Added)
-        tb_Drug.getText(),         // p_Drug (Added - Yes/No)
-        tb_DrugType.getText(),     // p_DrugType
-        tb_DrugDur.getText(),     // p_DrugDur (Note: You should rename jTextField4 to tb_DrugDur)
-        tb_BloodType.getText(),    // p_BloodType
-        tb_RH.getText()            // p_Rh
-    };
+    String[] data = new String[medicalFields.length];
+    for (int i = 0; i < medicalFields.length; i++) {
+        data[i] = medicalFields[i].getText();
+    }
+    return data;
 }
 
 private void updateGUIFromMap(java.util.Map<String, String> results) {
@@ -414,20 +416,15 @@ private void updateGUIFromMap(java.util.Map<String, String> results) {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 private void setFormMode(boolean isEditable) {
-    // Determine the color based on the mode
-    java.awt.Color bgColor = isEditable ? java.awt.Color.WHITE : new java.awt.Color(240, 240, 240); // White if editable, light gray if locked
-
-    // Add all the new fields to this array
-        JTextField[] fields = {
-        tb_Tobacco, tb_TobaccoQty, tb_TobaccoDur, 
-        tb_Alcohol, tb_AlcoholQty, tb_AlcoholDur, 
-        tb_Drug, tb_DrugType, tb_DrugDur, 
-        tb_BloodType, tb_RH
-    };
-    
-    for (JTextField field : fields) {
-        field.setEditable(isEditable);
-        field.setBackground(bgColor);
+    if (isEditable) {
+        FormUtils.enableEdit(medicalFields);
+    } else {
+        // Keep your custom gray-out logic for "Locked" mode
+        java.awt.Color lockedColor = new java.awt.Color(240, 240, 240);
+        for (JTextField field : medicalFields) {
+            field.setEditable(false);
+            field.setBackground(lockedColor);
+        }
     }
 
     // Toggle Buttons
@@ -435,31 +432,17 @@ private void setFormMode(boolean isEditable) {
     btnEdit.setEnabled(!isEditable);
     btnNew.setEnabled(!isEditable);
     btnDelete.setEnabled(!isEditable);
-
-    // Update Status Label
     lblModeStatus.setText(isEditable ? "Mode: Edit" : "Mode: View (Locked)");
 }
+
     private void tb_TobaccoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb_TobaccoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tb_TobaccoActionPerformed
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
     // 1. Clear all fields for a fresh entry
-        tb_Tobacco.setText("");
-        tb_TobaccoQty.setText("");
-        tb_Alcohol.setText("");
-        tb_AlcoholQty.setText("");
-        tb_DrugType.setText("");
-        tb_BloodType.setText("");
-        tb_RH.setText("");
-        tb_TobaccoDur.setText("");
-        tb_AlcoholDur.setText("");
-        tb_Drug.setText("");
-        tb_DrugDur.setText("");
-
-        // 2. Change the form to "Edit" mode (This will turn them white and editable)
-        setFormMode(true);
-
+    FormUtils.clearAndEdit(medicalFields); // No more long lists of setText("")!
+    setFormMode(true);
     }//GEN-LAST:event_btnNewActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
@@ -495,23 +478,23 @@ private void setFormMode(boolean isEditable) {
             if (result >= 0) {
                 JOptionPane.showMessageDialog(this, "Medical record successfully deactivated.");
 
-                // 4. Clear the form and lock it (reusing your New button logic)
-                btnNewActionPerformed(null);
-                setFormMode(false);
+                // Clear and reset the form using your utilities
+                FormUtils.clearAndEdit(medicalFields); 
+                lbl_PatientID.setText("Patient ID:");
+                setFormMode(false); // Lock it back up
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Delete Error: " + e.getMessage());
         }
     }
+    
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
-        // TODO add your handling code here:
-       // navigationUtils.switchForm(this, new partner2form?());
+        navigationUtils.switchForm(this, new bATolerance());
     }//GEN-LAST:event_btnNextActionPerformed
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
         navigationUtils.switchForm(this, new patientDemographics());
     }//GEN-LAST:event_btnBackActionPerformed
 

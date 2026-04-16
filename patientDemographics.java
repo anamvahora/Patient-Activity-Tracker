@@ -11,60 +11,58 @@ public class patientDemographics extends javax.swing.JFrame {
     /**
      * Creates new form patientDemographics
      */
+    // Define the global array for all demographics fields
+    private javax.swing.text.JTextComponent[] demographicsFields;
+    
     public patientDemographics() {
         initComponents();
-        // 1. Define the ID you want to test
-        int testID = 1; 
+        
+        // Initialize the array with all 20 text components
+        demographicsFields = new javax.swing.text.JTextComponent[]{
+            tb_FirstName, tb_LastName, tb_PrevLastName, tb_SSN,
+            tb_Address, tb_City, tb_State, tb_Zip, tb_Country,
+            tb_MobilePhone, tb_Email, tb_Gender, tb_Citizenship,
+            tb_Ethnic, tb_MaritalStatus, tb_PrimaryHCP, tb_NOKName,
+            tb_NOKRelationship, tb_EmergPhone, ta_Comments
+        };
 
-        // 2. Load the data into the fields
-        loadPatientData(testID); 
-
-        // 3. Explicitly set the ID field so Save/Delete work correctly
-        lbl_PatientID.setText(String.valueOf("Patient ID: " + testID));
-        // 4. Start in View Mode (Gray)
+        int currentPID = SelectedPatient.patientID; 
+        if (currentPID != -1) {
+            loadPatientData(currentPID); 
+        } else {
+            // If no patient was selected, start a fresh "New Patient" form
+            btnNewActionPerformed(null);
+        }
+        
         setFormMode(false);
         
-        // Force the comments scroll pane to be 100 pixels tall
-jScrollPane1.setPreferredSize(new java.awt.Dimension(360, 100));
-jScrollPane1.setMinimumSize(new java.awt.Dimension(360, 100));
-
-// Make sure the text area inside it is also forced to show up
-ta_Comments.setRows(5); 
-
-// Re-calculate the main panel now that the comments have a real size
-jPanel1.revalidate();
-
-
+        // so it doesnt default to rando tiem
+        jSpinnerDOB.setValue(new java.util.Date());
+        
+        // Layout fixes for comments
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(360, 100));
+        ta_Comments.setRows(5); 
+        jPanel1.revalidate();
     }
     
-private void setFormMode(boolean isEditable) {
-    // 1. Determine the color
-    java.awt.Color bgColor = isEditable ? java.awt.Color.WHITE : new java.awt.Color(240, 240, 240);
+    private void setFormMode(boolean isEditable) {
+        java.awt.Color bgColor = isEditable ? java.awt.Color.WHITE : new java.awt.Color(240, 240, 240);
 
-    // 2. Group only the ACTUAL text components (Removed jSpinnerDOB from here)
-    javax.swing.text.JTextComponent[] textComponents = {
-        tb_FirstName, tb_LastName, tb_PrevLastName, tb_SSN,
-        tb_Address, tb_City, tb_State, tb_Zip, tb_Country,
-        tb_MobilePhone, tb_Email, tb_Gender, tb_Citizenship,
-        tb_Ethnic, tb_MaritalStatus, tb_PrimaryHCP, tb_NOKName,
-        tb_NOKRelationship, tb_EmergPhone, ta_Comments
-    };
+        // 1. Bulk update all text fields and text areas
+        for (javax.swing.text.JTextComponent c : demographicsFields) {
+            c.setEditable(isEditable);
+            c.setBackground(bgColor);
+        }
 
-    // 3. Loop through text components to set editable and background
-    for (javax.swing.text.JTextComponent c : textComponents) {
-        c.setEditable(isEditable);
-        c.setBackground(bgColor);
+        // 2. Handle the JSpinner (which isn't a JTextComponent)
+        jSpinnerDOB.setEnabled(isEditable);
+        if (jSpinnerDOB.getEditor() instanceof javax.swing.JSpinner.DefaultEditor) {
+            javax.swing.JTextField textField = ((javax.swing.JSpinner.DefaultEditor) jSpinnerDOB.getEditor()).getTextField();
+            textField.setBackground(bgColor);
+        }
+
+        lblModeStatus.setText(isEditable ? "Mode: Editing" : "Mode: View (Locked)");
     }
-
-    // 4. Handle the Spinner separately (Spinners use setEnabled)
-    jSpinnerDOB.setEnabled(isEditable);
-    
-    // Optional: If you want the spinner's text box to change color too
-    if (jSpinnerDOB.getEditor() instanceof javax.swing.JSpinner.DefaultEditor) {
-        javax.swing.JTextField textField = ((javax.swing.JSpinner.DefaultEditor) jSpinnerDOB.getEditor()).getTextField();
-        textField.setBackground(bgColor);
-    }
-}
     
     //bridge that takes the raw data from your MySQL ResultSet and "pastes" it into your 21 JTextFields.
     private void loadPatientData(int pid) {
@@ -114,31 +112,24 @@ private void setFormMode(boolean isEditable) {
     }
 }
     
-    //ensures the data is in the exact order your stored procedures expect.
-// ensures the data is in the exact order your stored procedures expect.
-    private String[] getFieldsArray() {
-        // 1. Extract the date from the spinner and format it for MySQL
-        java.util.Date utilDate = (java.util.Date) jSpinnerDOB.getValue();
-        String formattedDate = "";
-        if (utilDate != null) {
-            formattedDate = new java.sql.Date(utilDate.getTime()).toString();
-        }
 
-        // 2. Return the array with the formatted date string at index 13
-        return new String[]{
-            tb_LastName.getText(), tb_PrevLastName.getText(), tb_FirstName.getText(),
-            tb_Address.getText(), tb_City.getText(), tb_State.getText(),
-            tb_Zip.getText(), tb_Country.getText(), tb_Citizenship.getText(),
-            tb_MobilePhone.getText(), tb_EmergPhone.getText(), tb_Email.getText(),
-            tb_SSN.getText(), 
-            formattedDate, // This replaces tb_DOB.getText()
-            tb_Gender.getText(),
-            tb_Ethnic.getText(), tb_MaritalStatus.getText(), tb_PrimaryHCP.getText(),
-            ta_Comments.getText(), tb_NOKName.getText(), tb_NOKRelationship.getText()
-        };
-    
-             
-   
+     private String[] getFieldsArray() {
+    // 1. Convert Spinner date to SQL string
+    java.util.Date utilDate = (java.util.Date) jSpinnerDOB.getValue();
+    String formattedDate = (utilDate != null) ? new java.sql.Date(utilDate.getTime()).toString() : "";
+
+    // 2. Return data in the order required by your Stored Procedure
+    return new String[]{
+        tb_LastName.getText(), tb_PrevLastName.getText(), tb_FirstName.getText(),
+        tb_Address.getText(), tb_City.getText(), tb_State.getText(),
+        tb_Zip.getText(), tb_Country.getText(), tb_Citizenship.getText(),
+        tb_MobilePhone.getText(), tb_EmergPhone.getText(), tb_Email.getText(),
+        tb_SSN.getText(), 
+        formattedDate,//dob
+        tb_Gender.getText(),
+        tb_Ethnic.getText(), tb_MaritalStatus.getText(), tb_PrimaryHCP.getText(),
+        ta_Comments.getText(), tb_NOKName.getText(), tb_NOKRelationship.getText()
+    };
 }
 
 
@@ -867,30 +858,14 @@ private void setFormMode(boolean isEditable) {
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
-        // TODO add your handling code here:
-        // 1. Clear all 21 text fields and the comments area
-        // This ensures no data from a previous patient remains
-        javax.swing.text.JTextComponent[] components = {
-            tb_FirstName, tb_LastName, tb_PrevLastName, tb_SSN, 
-            tb_Address, tb_City, tb_State, tb_Zip, tb_Country,
-            tb_MobilePhone, tb_Email, tb_Gender, tb_Citizenship,
-            tb_Ethnic, tb_MaritalStatus, tb_PrimaryHCP, tb_NOKName,
-            tb_NOKRelationship, tb_EmergPhone, ta_Comments
-        };
-
-        for (javax.swing.text.JTextComponent comp : components) {
+        // loop to clear everything
+        for (javax.swing.text.JTextComponent comp : demographicsFields) {
             comp.setText("");
         }
 
-        // 2. Set the form to Edit Mode
-        // This will turn the backgrounds white and call setEditable(true)
         setFormMode(true);
-
-        // 3. Update the status label to give the user feedback
-        lblModeStatus.setText("Mode: Creating New Patient");
-
-        // 4. Move the cursor to the first field (First Name) automatically
-        tb_FirstName.requestFocus();
+        lbl_PatientID.setText("Patient ID: 0");
+        tb_FirstName.requestFocus(); 
     }//GEN-LAST:event_btnNewActionPerformed
 
     private void tb_PrevLastNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb_PrevLastNameActionPerformed
@@ -907,8 +882,8 @@ private void setFormMode(boolean isEditable) {
     }//GEN-LAST:event_btnNextActionPerformed
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
-       // navigationUtils.switchForm(this, partner code?);
+
+      navigationUtils.switchForm(this, new patientSelection());
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void tb_EthnicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb_EthnicActionPerformed
