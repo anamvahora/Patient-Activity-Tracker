@@ -7,6 +7,8 @@ import javax.swing.JTextField;
 import java.sql.ResultSet;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
+import java.sql.*;
+import utils.ActivityInterviewUtils;
 
 public class bATolerance extends javax.swing.JFrame {
     
@@ -88,6 +90,7 @@ public class bATolerance extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tblActivity = new javax.swing.JTable();
         btnDelete = new javax.swing.JButton();
+        btnInterview = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -128,6 +131,9 @@ public class bATolerance extends javax.swing.JFrame {
         btnDelete.setText("Delete");
         btnDelete.addActionListener(this::btnDeleteActionPerformed);
 
+        btnInterview.setText("Interview");
+        btnInterview.addActionListener(this::btnInterviewActionPerformed);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -148,23 +154,24 @@ public class bATolerance extends javax.swing.JFrame {
                                 .addGap(55, 55, 55)
                                 .addComponent(txtActivityName, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(btnNew)
-                                    .addComponent(jLabel3))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(19, 19, 19)
+                                        .addComponent(btnNew)))
+                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(77, 77, 77)
                                         .addComponent(btnEdit)
-                                        .addGap(88, 88, 88)
+                                        .addGap(73, 73, 73)
                                         .addComponent(btnSave)
-                                        .addGap(62, 62, 62)
-                                        .addComponent(btnDelete)))))
-                        .addContainerGap(73, Short.MAX_VALUE))))
+                                        .addGap(59, 59, 59)
+                                        .addComponent(btnDelete)
+                                        .addGap(50, 50, 50)
+                                        .addComponent(btnInterview))
+                                    .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(53, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -189,7 +196,8 @@ public class bATolerance extends javax.swing.JFrame {
                     .addComponent(btnNew)
                     .addComponent(btnSave)
                     .addComponent(btnEdit)
-                    .addComponent(btnDelete))
+                    .addComponent(btnDelete)
+                    .addComponent(btnInterview))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                 .addContainerGap())
@@ -231,31 +239,26 @@ public class bATolerance extends javax.swing.JFrame {
         if (selectedID == -1) {
 
             
-            String sql = "INSERT INTO activitytable (PatientID, ActivityDate, ActivityName, Difficulty) VALUES (?, ?, ?, ?)";
+            CallableStatement stmt = con.prepareCall("{CALL InsertActivitySP(?, ?, ?, ?)}");
 
-            PreparedStatement ps = con.prepareStatement(sql);
+            stmt.setInt(1, SelectedPatient.patientID);
+            stmt.setDate(2, java.sql.Date.valueOf(txtDate.getText().trim()));
+            stmt.setString(3, txtActivityName.getText().trim());
+            stmt.setString(4, txtDifficulty.getText().trim());
 
-            ps.setInt(1, SelectedPatient.patientID);  // or 1 if hardcoded
-            ps.setDate(2, java.sql.Date.valueOf(txtDate.getText().trim()));
-            ps.setString(3, txtActivityName.getText().trim());
-            ps.setString(4, txtDifficulty.getText().trim());
-
-            ps.executeUpdate();
+        stmt.execute();
             LoggerUtil.log("Inserted activity: " + txtActivityName.getText());
 
         } else {
-
             
-            String sql = "UPDATE activitytable SET ActivityDate=?, ActivityName=?, Difficulty=? WHERE ActivityID=?";
+            CallableStatement stmt = con.prepareCall("{CALL UpdateActivitySP(?, ?, ?, ?)}");
 
-            PreparedStatement ps = con.prepareStatement(sql);
+            stmt.setInt(1, selectedID);
+            stmt.setDate(2, java.sql.Date.valueOf(txtDate.getText().trim()));
+            stmt.setString(3, txtActivityName.getText().trim());
+            stmt.setString(4, txtDifficulty.getText().trim());
 
-            ps.setDate(1, java.sql.Date.valueOf(txtDate.getText().trim()));
-            ps.setString(2, txtActivityName.getText().trim());
-            ps.setString(3, txtDifficulty.getText().trim());
-            ps.setInt(4, selectedID);
-
-            ps.executeUpdate();
+            stmt.execute();
             LoggerUtil.log("Updated activity ID: " + selectedID);
            
         }
@@ -280,11 +283,9 @@ public class bATolerance extends javax.swing.JFrame {
 
         Connection con = DBConnection.getConnection();
 
-        String sql = "DELETE FROM activitytable WHERE ActivityID=?";
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setInt(1, selectedID);
-
-        ps.executeUpdate();
+        CallableStatement stmt = con.prepareCall("{CALL DeleteActivitySP(?)}");
+        stmt.setInt(1, selectedID);
+        stmt.execute();
         LoggerUtil.log("Deleted activity ID: " + selectedID);
 
         JOptionPane.showMessageDialog(this, "Deleted successfully!");
@@ -298,6 +299,14 @@ public class bATolerance extends javax.swing.JFrame {
         LoggerUtil.log("ERROR: " + e.getMessage());
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnInterviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInterviewActionPerformed
+        java.util.Map<String, String> results = ActivityInterviewUtils.runActivityInterview();
+
+        txtActivityName.setText(results.get("ActivityName"));
+        txtDifficulty.setText(results.get("Difficulty"));
+        txtDate.setText(results.get("Date"));
+    }//GEN-LAST:event_btnInterviewActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -324,6 +333,7 @@ public class bATolerance extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnInterview;
     private javax.swing.JButton btnNew;
     private javax.swing.JButton btnSave;
     private javax.swing.JLabel jLabel1;
