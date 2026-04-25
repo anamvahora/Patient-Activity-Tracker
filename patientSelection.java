@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.table.DefaultTableModel;
+import utils.navigationUtils;
 
 public class patientSelection extends javax.swing.JFrame {
     
@@ -18,30 +19,30 @@ public class patientSelection extends javax.swing.JFrame {
     }
     private void loadPatients() {
         
-    try {
-        Connection con = DBUtils.DBConnection.getConnection();
+     try{
+            Connection con = DBUtils.DBConnection.getConnection();
 
-        String sql = "SELECT patientID, firstname, lastname FROM Patient";
-        PreparedStatement ps = con.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
+            String sql = "SELECT PatientID, PtFirstName, PtLastName FROM patienttable";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
 
-        DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(new String[]{"ID", "First Name", "Last Name"});
+            DefaultTableModel model = new DefaultTableModel();
+            model.setColumnIdentifiers(new String[]{"ID", "First Name", "Last Name"});
 
-        while (rs.next()) {
-            model.addRow(new Object[]{
-                rs.getInt("patientID"),
-                rs.getString("firstname"),
-                rs.getString("lastname")
-            });
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("PatientID"),
+                    rs.getString("PtFirstName"),
+                    rs.getString("PtLastName")
+                });
+            }
+
+            tblPatient.setModel(model);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, e.getMessage());
         }
-
-        tblPatient.setModel(model);
-
-    } catch (Exception e) {
-    e.printStackTrace();
-    JOptionPane.showMessageDialog(this, e.getMessage());
-    }
 }
 
     /**
@@ -103,7 +104,7 @@ public class patientSelection extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectActionPerformed
-       int row = tblPatient.getSelectedRow();
+        int row = tblPatient.getSelectedRow();
 
     if (row == -1) {
         JOptionPane.showMessageDialog(this, "Select a patient first");
@@ -111,12 +112,12 @@ public class patientSelection extends javax.swing.JFrame {
     }
 
     SelectedPatient.patientID = Integer.parseInt(
-    tblPatient.getValueAt(row, 0).toString()
+        tblPatient.getValueAt(row, 0).toString()
     );
 
     LoggerUtil.log("Patient selected: " + SelectedPatient.patientID);
-        new bATolerance().setVisible(true);
-        this.dispose();
+
+    navigationUtils.switchForm(this, new bATolerance());
     }//GEN-LAST:event_btnSelectActionPerformed
 
     public static void main(String args[]) {

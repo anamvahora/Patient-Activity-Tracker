@@ -1,5 +1,5 @@
 
-package its340_andreas_anamv;
+package utils;
 
 
 public class navigationUtils {

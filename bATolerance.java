@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import java.sql.*;
 import utils.ActivityInterviewUtils;
+import utils.navigationUtils;
 
 public class bATolerance extends javax.swing.JFrame {
     
@@ -18,6 +19,8 @@ public class bATolerance extends javax.swing.JFrame {
     JTextField[] fields;
     public bATolerance() {
         initComponents();
+        FormUtils.disableFields(txtActivityName, txtDifficulty, txtDate);
+        
         tblActivity.addMouseListener(new java.awt.event.MouseAdapter() {
     public void mouseClicked(java.awt.event.MouseEvent evt) {
         tblActivityMouseClicked(evt);
@@ -41,6 +44,7 @@ public class bATolerance extends javax.swing.JFrame {
     txtDate.setText(tblActivity.getValueAt(row, 1).toString());
     txtActivityName.setText(tblActivity.getValueAt(row, 2).toString());
     txtDifficulty.setText(tblActivity.getValueAt(row, 3).toString());
+    FormUtils.disableFields(txtActivityName, txtDifficulty, txtDate);
     }
     private void loadTable() {
 
@@ -91,6 +95,8 @@ public class bATolerance extends javax.swing.JFrame {
         tblActivity = new javax.swing.JTable();
         btnDelete = new javax.swing.JButton();
         btnInterview = new javax.swing.JButton();
+        btnBack = new javax.swing.JButton();
+        btnNext = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -134,6 +140,12 @@ public class bATolerance extends javax.swing.JFrame {
         btnInterview.setText("Interview");
         btnInterview.addActionListener(this::btnInterviewActionPerformed);
 
+        btnBack.setText("Back");
+        btnBack.addActionListener(this::btnBackActionPerformed);
+
+        btnNext.setText("Next");
+        btnNext.addActionListener(this::btnNextActionPerformed);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -141,37 +153,43 @@ public class bATolerance extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
-                        .addGap(49, 49, 49))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(jLabel1)
+                        .addGap(55, 55, 55)
+                        .addComponent(txtActivityName, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addGap(55, 55, 55)
-                                .addComponent(txtActivityName, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel3)
+                                .addGap(18, 18, 18))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(btnNew)
+                                .addGap(3, 3, 3)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel3)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(19, 19, 19)
-                                        .addComponent(btnNew)))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(btnEdit)
-                                        .addGap(73, 73, 73)
-                                        .addComponent(btnSave)
-                                        .addGap(59, 59, 59)
-                                        .addComponent(btnDelete)
-                                        .addGap(50, 50, 50)
-                                        .addComponent(btnInterview))
-                                    .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, 459, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addContainerGap(53, Short.MAX_VALUE))))
+                                .addGap(38, 38, 38)
+                                .addComponent(btnEdit)
+                                .addGap(43, 43, 43)
+                                .addComponent(btnSave)
+                                .addGap(55, 55, 55)
+                                .addComponent(btnDelete)
+                                .addGap(50, 50, 50)
+                                .addComponent(btnInterview))))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(53, 53, 53)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnBack)
+                        .addContainerGap(86, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnNext)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(68, 68, 68))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -179,14 +197,19 @@ public class bATolerance extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
-                    .addComponent(txtActivityName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtActivityName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnBack)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addComponent(jLabel2))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtDifficulty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(btnNext)))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -199,19 +222,25 @@ public class bATolerance extends javax.swing.JFrame {
                     .addComponent(btnDelete)
                     .addComponent(btnInterview))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
-        FormUtils.clearAndEdit(fields);
+        selectedID = -1;
+        
+        txtActivityName.setText("");
+        txtDifficulty.setText("");
+        txtDate.setText("");
+
+    FormUtils.enableFields(txtActivityName, txtDifficulty, txtDate);
     }//GEN-LAST:event_btnNewActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-        FormUtils.enableEdit(fields);
+       FormUtils.enableFields(txtActivityName, txtDifficulty, txtDate);
     }//GEN-LAST:event_btnEditActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -266,7 +295,11 @@ public class bATolerance extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Saved successfully!");
 
         loadTable();
-        FormUtils.clearAndEdit(fields);
+    txtActivityName.setText("");
+    txtDifficulty.setText("");
+    txtDate.setText("");
+
+    FormUtils.disableFields(txtActivityName, txtDifficulty, txtDate);
         selectedID = -1;
 
     } catch (Exception e) {
@@ -291,7 +324,11 @@ public class bATolerance extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Deleted successfully!");
 
         loadTable();
-        FormUtils.clearAndEdit(fields);
+        txtActivityName.setText("");
+        txtDifficulty.setText("");
+        txtDate.setText("");
+
+    FormUtils.disableFields(txtActivityName, txtDifficulty, txtDate);
         selectedID = -1;
 
     } catch (Exception e) {
@@ -306,7 +343,16 @@ public class bATolerance extends javax.swing.JFrame {
         txtActivityName.setText(results.get("ActivityName"));
         txtDifficulty.setText(results.get("Difficulty"));
         txtDate.setText(results.get("Date"));
+        FormUtils.enableFields(txtActivityName, txtDifficulty, txtDate);
     }//GEN-LAST:event_btnInterviewActionPerformed
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        navigationUtils.switchForm(this, new patientSelection());
+    }//GEN-LAST:event_btnBackActionPerformed
+
+    private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
+        navigationUtils.switchForm(this, new SOBForm());
+    }//GEN-LAST:event_btnNextActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -331,10 +377,12 @@ public class bATolerance extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnInterview;
     private javax.swing.JButton btnNew;
+    private javax.swing.JButton btnNext;
     private javax.swing.JButton btnSave;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
